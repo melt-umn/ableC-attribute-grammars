@@ -1,0 +1,34 @@
+#include <gc.h>
+
+#ifndef _LAZY_XH
+#define _LAZY_XH
+
+template<typename a>
+datatype Lazy {
+  Thunk(closure<(void) -> a> fn);
+  Result(a val);
+}
+
+template<typename a>
+Lazy<a> *delay(closure<(void) -> a> fn) {
+  Lazy<a> *res = GC_malloc(sizeof(Lazy<a>));
+  *res = Thunk(fn);
+  return res;
+}
+
+template<typename a>
+a demand(Lazy<a> *l) {
+  match (l) {
+    Thunk(fn) -> {
+      a res = fn();
+      *l = Result(res);
+      return res;
+    }
+    Result(val) -> {
+      return val;
+    }
+  }
+}
+
+
+#endif
